@@ -1,15 +1,16 @@
 const knex = require('knex');
+const config = require('../../knexfile');
 
-const connection = process.env.DATABASE_URL || {
-  host: process.env.DB_HOST || 'postgres',
-  port: process.env.DB_PORT || 5432,
-  database: process.env.DB_NAME || 'inventory_db',
-  user: process.env.DB_USER || 'its_user',
-  password: process.env.DB_PASSWORD,
-};
+const env = process.env.NODE_ENV || 'development';
 
-module.exports = knex({
-  client: 'pg',
-  connection,
-  pool: { min: 2, max: 10 },
-});
+const db = knex(config[env]);
+
+// Test connection on startup
+db.raw('SELECT 1')
+  .then(() => console.log('✅ PostgreSQL connected'))
+  .catch((err) => {
+    console.error('❌ PostgreSQL connection failed:', err.message);
+    process.exit(1);
+  });
+
+module.exports = db;
